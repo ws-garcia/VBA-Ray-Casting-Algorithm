@@ -235,6 +235,74 @@ Public Sub ComputeProperties()
     P_OperationsAmount = 1
 End Sub
 
+Private Function GetIntersectionsNumber(LinesData() As Double, _
+                                        RayData() As Double, FromPoint As Double) As Long
+    Dim Delta1 As Double, Delta2 As Double
+    Dim iCounter
+    Dim Intersection As Variant
+    Dim IntersectionCumulator As Long
+    Dim LineMagnitude As Double
+    Dim obLB As Long, obUB As Long
+    Dim SideIntersection As Boolean
+    Dim TestLine(0 To 1, 0 To 1) As Double
+    
+    obLB = LBound(P_OuterBoundary)
+    obUB = UBound(P_OuterBoundary)
+    For iCounter = obLB To obUB
+            If LineInForward(LinesData(iCounter, 0), _
+                                    LinesData(iCounter, 2), FromPoint) Then
+                TestLine(0, 0) = LinesData(iCounter, 0)
+                TestLine(0, 1) = LinesData(iCounter, 1)
+                TestLine(1, 0) = LinesData(iCounter, 2)
+                TestLine(1, 1) = LinesData(iCounter, 3)
+                Debug.Print "Line check at:"; "(" & TestLine(0, 0) & ", " & TestLine(0, 1) & ")" _
+                                                & "|"; "(" & TestLine(1, 0) & ", " & TestLine(1, 1) & ")"
+                Intersection = Me.LinesIntersection(RayData, TestLine) 'Compute intersection
+                If Not IsNull(Intersection) Then
+                    LineMagnitude = Sqr((TestLine(1, 0) - TestLine(0, 0)) ^ 2 + _
+                                            (TestLine(1, 1) - TestLine(0, 1)) ^ 2)
+                    Delta1 = Sqr((TestLine(0, 0) - Intersection(0, 0)) ^ 2 + _
+                                        (TestLine(0, 1) - Intersection(0, 1)) ^ 2)
+                    Delta2 = Sqr((TestLine(1, 0) - Intersection(0, 0)) ^ 2 + _
+                                        (TestLine(1, 1) - Intersection(0, 1)) ^ 2)
+                    SideIntersection = ((Delta1 + Delta2) <= LineMagnitude)
+                    If SideIntersection Then
+                        If Intersection(0, 0) - FromPoint > 0 Then 'Only intersection in forward sense
+                            IntersectionCumulator = IntersectionCumulator + 1
+                            Debug.Print "Intersection found in:"; "(" & TestLine(0, 0) & ", " & TestLine(0, 1) & ")" _
+                                                                & "|"; "(" & TestLine(1, 0) & ", " & TestLine(1, 1) & ")"
+                        End If
+                    End If
+                End If
+            End If
+        Next iCounter
+        GetIntersectionsNumber = IntersectionCumulator
+End Function
+
+Private Function GetPolygonSides() As Double()
+    Dim iCounter
+    Dim obLB As Long, obUB As Long
+    Dim obLB2 As Long
+    Dim tmpResult() As Double
+    
+    obLB = LBound(P_OuterBoundary)
+    obUB = UBound(P_OuterBoundary)
+    obLB2 = LBound(P_OuterBoundary, 2)
+    ReDim tmpResult(obLB To obUB, 0 To 3)
+    For iCounter = obLB To obUB
+        tmpResult(iCounter, 0) = CDbl(P_OuterBoundary(iCounter, obLB2))
+        tmpResult(iCounter, 1) = CDbl(P_OuterBoundary(iCounter, obLB2 + 1))
+        If iCounter < obUB Then
+            tmpResult(iCounter, 2) = CDbl(P_OuterBoundary(iCounter + 1, obLB2))
+            tmpResult(iCounter, 3) = CDbl(P_OuterBoundary(iCounter + 1, obLB2 + 1))
+        Else
+            tmpResult(iCounter, 2) = CDbl(P_OuterBoundary(obLB, obLB2))
+            tmpResult(iCounter, 3) = CDbl(P_OuterBoundary(obLB, obLB2 + 1))
+        End If
+    Next iCounter
+    GetPolygonSides = tmpResult
+End Function
+
 Private Function IsSimpleDataType(V As Variant) As Boolean
     On Error Resume Next
     If IsArray(V) = True Then
@@ -304,7 +372,7 @@ End Function
 
 Private Function LineInForward(x1 As Double, x2 As Double, _
                                 xref As Double) As Boolean
-    LineInForward = ((x1 >= xref) Or (x2 >= xref))
+    LineInForward = ((x1 > xref) Or (x2 > xref))
 End Function
 
 Public Function LinesIntersection(ByRef PointsInLine1 As Variant, PointsInLine2 As Variant, Optional k As Integer = 1) As Variant
@@ -402,72 +470,7 @@ Private Function NumberOfArrayDimensions(Arr As Variant) As Integer
     NumberOfArrayDimensions = Ndx - 1
 
 End Function
-Private Function GetPolygonSides() As Double()
-    Dim iCounter
-    Dim obLB As Long, obUB As Long
-    Dim obLB2 As Long
-    Dim tmpResult() As Double
-    
-    obLB = LBound(P_OuterBoundary)
-    obUB = UBound(P_OuterBoundary)
-    obLB2 = LBound(P_OuterBoundary, 2)
-    ReDim tmpResult(obLB To obUB, 0 To 3)
-    For iCounter = obLB To obUB
-        tmpResult(iCounter, 0) = CDbl(P_OuterBoundary(iCounter, obLB2))
-        tmpResult(iCounter, 1) = CDbl(P_OuterBoundary(iCounter, obLB2 + 1))
-        If iCounter < obUB Then
-            tmpResult(iCounter, 2) = CDbl(P_OuterBoundary(iCounter + 1, obLB2))
-            tmpResult(iCounter, 3) = CDbl(P_OuterBoundary(iCounter + 1, obLB2 + 1))
-        Else
-            tmpResult(iCounter, 2) = CDbl(P_OuterBoundary(obLB, obLB2))
-            tmpResult(iCounter, 3) = CDbl(P_OuterBoundary(obLB, obLB2 + 1))
-        End If
-    Next iCounter
-    GetPolygonSides = tmpResult
-End Function
-Private Function GetIntersectionsNumber(LinesData() As Double, _
-                                        RayData() As Double, FromPoint As Double) As Long
-    Dim Delta1 As Double, Delta2 As Double
-    Dim iCounter
-    Dim Intersection As Variant
-    Dim IntersectionCumulator As Long
-    Dim LineMagnitude As Double
-    Dim obLB As Long, obUB As Long
-    Dim SideIntersection As Boolean
-    Dim TestLine(0 To 1, 0 To 1) As Double
-    
-    obLB = LBound(P_OuterBoundary)
-    obUB = UBound(P_OuterBoundary)
-    For iCounter = obLB To obUB
-            If LineInForward(LinesData(iCounter, 0), _
-                                    LinesData(iCounter, 2), FromPoint) Then
-                TestLine(0, 0) = LinesData(iCounter, 0)
-                TestLine(0, 1) = LinesData(iCounter, 1)
-                TestLine(1, 0) = LinesData(iCounter, 2)
-                TestLine(1, 1) = LinesData(iCounter, 3)
-                Debug.Print "Line check at:"; "(" & TestLine(0, 0) & ", " & TestLine(0, 1) & ")" _
-                                                & "|"; "(" & TestLine(1, 0) & ", " & TestLine(1, 1) & ")"
-                Intersection = Me.LinesIntersection(RayData, TestLine) 'Compute intersection
-                If Not IsNull(Intersection) Then
-                    LineMagnitude = Sqr((TestLine(1, 0) - TestLine(0, 0)) ^ 2 + _
-                                            (TestLine(1, 1) - TestLine(0, 1)) ^ 2)
-                    Delta1 = Sqr((TestLine(0, 0) - Intersection(0, 0)) ^ 2 + _
-                                        (TestLine(0, 1) - Intersection(0, 1)) ^ 2)
-                    Delta2 = Sqr((TestLine(1, 0) - Intersection(0, 0)) ^ 2 + _
-                                        (TestLine(1, 1) - Intersection(0, 1)) ^ 2)
-                    SideIntersection = ((Delta1 + Delta2) <= LineMagnitude)
-                    If SideIntersection Then
-                        If Intersection(0, 0) - FromPoint > 0 Then 'Only intersection in forwaer sense
-                            IntersectionCumulator = IntersectionCumulator + 1
-                            Debug.Print "Intersection found in:"; "(" & TestLine(0, 0) & ", " & TestLine(0, 1) & ")" _
-                                                                & "|"; "(" & TestLine(1, 0) & ", " & TestLine(1, 1) & ")"
-                        End If
-                    End If
-                End If
-            End If
-        Next iCounter
-        GetIntersectionsNumber = IntersectionCumulator
-End Function
+
 Public Function PointInPolygon(xCoordinate As Double, _
                                         yCoordinate As Double) As Boolean
     'This function returns True if the given coordinates lie on the area
