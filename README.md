@@ -4,7 +4,7 @@ Implementation of the ray casting algorithm in VBA
  
 ## Description
 
-The ray casting algorithm is used to check if a given point lies inside a polygon. The majority of ray casting algorithm implementations use traditional methods to compute lines intersections. These approaches need logic to handle all the special case. 
+The ray casting algorithm is used to check if a given point lies inside a polygon. The majority of ray casting algorithm implementations use traditional methods to compute lines intersections. These approaches need logic to handle all the specials cases. 
 
 The solution presented here introduces the particularity that the intersections are calculated using [homogeneous coordinates](https://en.wikipedia.org/wiki/Homogeneous_coordinates). This feature allows the ray to be defined horizontally, vertically or in any direction on a given reference system, with slight modifications to the code of the proposed solution.
 
