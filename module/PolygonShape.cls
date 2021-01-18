@@ -502,11 +502,7 @@ Public Function PointInPolygon(xCoordinate As Double, _
         'Lines data
         LinesPoints() = GetPolygonSides
         'Lines intersection
-        If Cage(2) > Ray(0, 0) Then 'Select the right most point
-            RefPoint = Cage(2)
-        Else
-            RefPoint = Ray(0, 0)
-        End If
+        RefPoint = Ray(0, 0)
         IntersectionCounter = GetIntersectionsNumber(LinesPoints, Ray, RefPoint)
         PointInPolygon = ((IntersectionCounter Mod 2) = 1)
     End If
@@ -550,7 +546,6 @@ Public Sub TranslateAxisToCentroid()
                                                             PropertiesArray(1)
             P_OuterBoundary(i, LBound(P_OuterBoundary, 2) + 1) = P_OuterBoundary(i, LBound(P_OuterBoundary, 2) + 1) - _
                                                             PropertiesArray(2)
-            'Debug.Print P_OuterBoundary(i, LBound(P_OuterBoundary, 2)); ","; P_OuterBoundary(i, LBound(P_OuterBoundary, 2) + 1)
         Next i
     End If
 End Sub
@@ -563,7 +558,6 @@ Public Sub TranslateAxisToOrigin()
                                                             PropertiesArray(1)
             P_OuterBoundary(i, LBound(P_OuterBoundary, 2) + 1) = P_OuterBoundary(i, LBound(P_OuterBoundary, 2) + 1) + _
                                                             PropertiesArray(2)
-            'Debug.Print P_OuterBoundary(i, LBound(P_OuterBoundary, 2)); ","; P_OuterBoundary(i, LBound(P_OuterBoundary, 2) + 1)
         Next i
     End If
 End Sub
