@@ -30,7 +30,7 @@ Private P_ErrorSource As String
 Private P_LastOperationDescription As String
 Private P_LastOperationSuccess  As Boolean
 Private P_OperationsAmount As Double
-Private P_OuterBoundary() As Variant
+Private P_OuterBoundary As Variant
 Private P_OuterBoundaryFlag As Boolean 'TRUE when the shape's Outer Boundary is defined
 Private P_Properties As Variant 'Holds all the section properties
 Private P_PropertiesColl As Collection 'Holds all the section properties [for provide one to one access]
@@ -64,16 +64,16 @@ Public Property Get OperationsAmount() As Double
     OperationsAmount = P_OperationsAmount
 End Property
 
-Public Property Get OuterBoundary() As Variant()
-    OuterBoundary() = P_OuterBoundary
+Public Property Get OuterBoundary() As Variant
+    OuterBoundary = P_OuterBoundary
 End Property
 
-Public Property Let OuterBoundary(ByRef PointsArray() As Variant)
+Public Property Let OuterBoundary(ByRef PointsArray As Variant)
     On Error Resume Next
     P_OuterBoundaryFlag = False
     If IsValid2DArray(PointsArray, CounterClockwise) Then 'Check the input
         P_OuterBoundaryFlag = True
-        P_OuterBoundary() = PointsArray
+        P_OuterBoundary = PointsArray
     End If
     'Begin error Handler section
     If Err.Number = 0 Then
@@ -255,7 +255,7 @@ Private Function GetIntersectionsNumber(LinesData() As Double, _
                 TestLine(0, 1) = LinesData(iCounter, 1)
                 TestLine(1, 0) = LinesData(iCounter, 2)
                 TestLine(1, 1) = LinesData(iCounter, 3)
-                Debug.Print "Line check at:"; "(" & TestLine(0, 0) & ", " & TestLine(0, 1) & ")" _
+                'Debug.Print "Line check at:"; "(" & TestLine(0, 0) & ", " & TestLine(0, 1) & ")" _
                                                 & "|"; "(" & TestLine(1, 0) & ", " & TestLine(1, 1) & ")"
                 Intersection = Me.LinesIntersection(RayData, TestLine) 'Compute intersection
                 If Not IsNull(Intersection) Then
@@ -269,7 +269,7 @@ Private Function GetIntersectionsNumber(LinesData() As Double, _
                     If SideIntersection Then
                         If Intersection(0, 0) - FromPoint > 0 Then 'Only intersection in forward sense
                             IntersectionCumulator = IntersectionCumulator + 1
-                            Debug.Print "Intersection found in:"; "(" & TestLine(0, 0) & ", " & TestLine(0, 1) & ")" _
+                            'Debug.Print "Intersection found in:"; "(" & TestLine(0, 0) & ", " & TestLine(0, 1) & ")" _
                                                                 & "|"; "(" & TestLine(1, 0) & ", " & TestLine(1, 1) & ")"
                         End If
                     End If
@@ -488,9 +488,9 @@ Public Function PointInPolygon(xCoordinate As Double, _
         'Centroid
         XC = P_PropertiesColl("Cgx")
         YC = P_PropertiesColl("Cgy")
-        Debug.Print "Starting check over point:"; "(" & xCoordinate & ", " & yCoordinate & ")..."
-        Debug.Print "Polygon AREA:"; P_PropertiesColl("Area")
-        Debug.Print "Polygon BARYCENTER:"; "(" & XC & ", " & YC & ")"
+        'Debug.Print "Starting check over point:"; "(" & xCoordinate & ", " & yCoordinate & ")..."
+        'Debug.Print "Polygon AREA:"; P_PropertiesColl("Area")
+        'Debug.Print "Polygon BARYCENTER:"; "(" & XC & ", " & YC & ")"
         Cage() = BoundaryPointsCage(P_OuterBoundary) 'Cages all vertex
         'Represent the ray as a horizontal line
         Epsilon = ((YC - Cage(3)) / 100)  'Break symmetry
@@ -550,7 +550,7 @@ Public Sub TranslateAxisToCentroid()
                                                             PropertiesArray(1)
             P_OuterBoundary(i, LBound(P_OuterBoundary, 2) + 1) = P_OuterBoundary(i, LBound(P_OuterBoundary, 2) + 1) - _
                                                             PropertiesArray(2)
-            Debug.Print P_OuterBoundary(i, LBound(P_OuterBoundary, 2)); ","; P_OuterBoundary(i, LBound(P_OuterBoundary, 2) + 1)
+            'Debug.Print P_OuterBoundary(i, LBound(P_OuterBoundary, 2)); ","; P_OuterBoundary(i, LBound(P_OuterBoundary, 2) + 1)
         Next i
     End If
 End Sub
@@ -563,7 +563,7 @@ Public Sub TranslateAxisToOrigin()
                                                             PropertiesArray(1)
             P_OuterBoundary(i, LBound(P_OuterBoundary, 2) + 1) = P_OuterBoundary(i, LBound(P_OuterBoundary, 2) + 1) + _
                                                             PropertiesArray(2)
-            Debug.Print P_OuterBoundary(i, LBound(P_OuterBoundary, 2)); ","; P_OuterBoundary(i, LBound(P_OuterBoundary, 2) + 1)
+            'Debug.Print P_OuterBoundary(i, LBound(P_OuterBoundary, 2)); ","; P_OuterBoundary(i, LBound(P_OuterBoundary, 2) + 1)
         Next i
     End If
 End Sub
