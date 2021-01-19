@@ -255,7 +255,7 @@ Private Function GetIntersectionsNumber(LinesData() As Double, _
                 TestLine(0, 1) = LinesData(iCounter, 1)
                 TestLine(1, 0) = LinesData(iCounter, 2)
                 TestLine(1, 1) = LinesData(iCounter, 3)
-                'Debug.Print "Line check at:"; "(" & TestLine(0, 0) & ", " & TestLine(0, 1) & ")" _
+                Debug.Print "Line check at:"; "(" & TestLine(0, 0) & ", " & TestLine(0, 1) & ")" _
                                                 & "|"; "(" & TestLine(1, 0) & ", " & TestLine(1, 1) & ")"
                 Intersection = Me.LinesIntersection(RayData, TestLine) 'Compute intersection
                 If Not IsNull(Intersection) Then
@@ -265,11 +265,11 @@ Private Function GetIntersectionsNumber(LinesData() As Double, _
                                         (TestLine(0, 1) - Intersection(0, 1)) ^ 2)
                     Delta2 = Sqr((TestLine(1, 0) - Intersection(0, 0)) ^ 2 + _
                                         (TestLine(1, 1) - Intersection(0, 1)) ^ 2)
-                    SideIntersection = ((Delta1 + Delta2) <= LineMagnitude)
+                    SideIntersection = (Round(Delta1 + Delta2, 2) <= Round(LineMagnitude, 2))
                     If SideIntersection Then
                         If Intersection(0, 0) - FromPoint > 0 Then 'Only intersection in forward sense
                             IntersectionCumulator = IntersectionCumulator + 1
-                            'Debug.Print "Intersection found in:"; "(" & TestLine(0, 0) & ", " & TestLine(0, 1) & ")" _
+                            Debug.Print "Intersection found in:"; "(" & TestLine(0, 0) & ", " & TestLine(0, 1) & ")" _
                                                                 & "|"; "(" & TestLine(1, 0) & ", " & TestLine(1, 1) & ")"
                         End If
                     End If
@@ -370,9 +370,9 @@ Private Function IsValid2DArray(Array2D As Variant, Optional ExpectedVerticesSen
     End If
 End Function
 
-Private Function LineInForward(x1 As Double, x2 As Double, _
+Private Function LineInForward(X1 As Double, X2 As Double, _
                                 xref As Double) As Boolean
-    LineInForward = ((x1 > xref) Or (x2 > xref))
+    LineInForward = ((X1 > xref) Or (X2 > xref))
 End Function
 
 Public Function LinesIntersection(ByRef PointsInLine1 As Variant, PointsInLine2 As Variant, Optional k As Integer = 1) As Variant
@@ -488,9 +488,9 @@ Public Function PointInPolygon(xCoordinate As Double, _
         'Centroid
         XC = P_PropertiesColl("Cgx")
         YC = P_PropertiesColl("Cgy")
-        'Debug.Print "Starting check over point:"; "(" & xCoordinate & ", " & yCoordinate & ")..."
-        'Debug.Print "Polygon AREA:"; P_PropertiesColl("Area")
-        'Debug.Print "Polygon BARYCENTER:"; "(" & XC & ", " & YC & ")"
+        Debug.Print "Starting check over point:"; "(" & xCoordinate & ", " & yCoordinate & ")..."
+        Debug.Print "Polygon AREA:"; P_PropertiesColl("Area")
+        Debug.Print "Polygon BARYCENTER:"; "(" & XC & ", " & YC & ")"
         Cage() = BoundaryPointsCage(P_OuterBoundary) 'Cages all vertex
         'Represent the ray as a horizontal line
         Epsilon = ((YC - Cage(3)) / 100)  'Break symmetry
