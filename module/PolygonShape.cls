@@ -265,7 +265,7 @@ Private Function GetIntersectionsNumber(LinesData() As Double, _
                                         (TestLine(0, 1) - Intersection(0, 1)) ^ 2)
                     Delta2 = Sqr((TestLine(1, 0) - Intersection(0, 0)) ^ 2 + _
                                         (TestLine(1, 1) - Intersection(0, 1)) ^ 2)
-                    SideIntersection = (Round(Delta1 + Delta2, 2) <= Round(LineMagnitude, 2))
+                    SideIntersection = (Round(Delta1 + Delta2, 2) = Round(LineMagnitude, 2))
                     If SideIntersection Then
                         If Intersection(0, 0) - FromPoint > 0 Then 'Only intersection in forward sense
                             IntersectionCumulator = IntersectionCumulator + 1
@@ -279,25 +279,25 @@ Private Function GetIntersectionsNumber(LinesData() As Double, _
         GetIntersectionsNumber = IntersectionCumulator
 End Function
 
-Private Function GetPolygonSides() As Double()
+Private Function GetPolygonSides(PolygonVertices As Variant) As Double()
     Dim iCounter
     Dim obLB As Long, obUB As Long
     Dim obLB2 As Long
     Dim tmpResult() As Double
     
-    obLB = LBound(P_OuterBoundary)
-    obUB = UBound(P_OuterBoundary)
-    obLB2 = LBound(P_OuterBoundary, 2)
+    obLB = LBound(PolygonVertices)
+    obUB = UBound(PolygonVertices)
+    obLB2 = LBound(PolygonVertices, 2)
     ReDim tmpResult(obLB To obUB, 0 To 3)
     For iCounter = obLB To obUB
-        tmpResult(iCounter, 0) = CDbl(P_OuterBoundary(iCounter, obLB2))
-        tmpResult(iCounter, 1) = CDbl(P_OuterBoundary(iCounter, obLB2 + 1))
+        tmpResult(iCounter, 0) = CDbl(PolygonVertices(iCounter, obLB2))
+        tmpResult(iCounter, 1) = CDbl(PolygonVertices(iCounter, obLB2 + 1))
         If iCounter < obUB Then
-            tmpResult(iCounter, 2) = CDbl(P_OuterBoundary(iCounter + 1, obLB2))
-            tmpResult(iCounter, 3) = CDbl(P_OuterBoundary(iCounter + 1, obLB2 + 1))
+            tmpResult(iCounter, 2) = CDbl(PolygonVertices(iCounter + 1, obLB2))
+            tmpResult(iCounter, 3) = CDbl(PolygonVertices(iCounter + 1, obLB2 + 1))
         Else
-            tmpResult(iCounter, 2) = CDbl(P_OuterBoundary(obLB, obLB2))
-            tmpResult(iCounter, 3) = CDbl(P_OuterBoundary(obLB, obLB2 + 1))
+            tmpResult(iCounter, 2) = CDbl(PolygonVertices(obLB, obLB2))
+            tmpResult(iCounter, 3) = CDbl(PolygonVertices(obLB, obLB2 + 1))
         End If
     Next iCounter
     GetPolygonSides = tmpResult
@@ -500,7 +500,7 @@ Public Function PointInPolygon(xCoordinate As Double, _
         Ray(0, 0) = xCoordinate: Ray(0, 1) = yCoordinate + Epsilon
         Ray(1, 0) = Cage(2): Ray(1, 1) = yCoordinate + Epsilon
         'Lines data
-        LinesPoints() = GetPolygonSides
+        LinesPoints() = GetPolygonSides(P_OuterBoundary)
         'Lines intersection
         RefPoint = Ray(0, 0)
         IntersectionCounter = GetIntersectionsNumber(LinesPoints, Ray, RefPoint)
@@ -508,6 +508,71 @@ Public Function PointInPolygon(xCoordinate As Double, _
     End If
 End Function
 
+Public Function SidesOverlaps(ByVal PolyShape As PolygonShape) As Boolean
+    On Error Resume Next
+    If PropertiesCalcFlag Then
+        If Not PolyShape Is Nothing Then
+            Dim VerticesA As Variant, VerticesB As Variant
+            Dim SidesA() As Double, SidesB() As Double
+            Dim xCounter As Long, zCounter As Long
+            Dim TestLineA(0 To 1, 0 To 1) As Double
+            Dim TestLineB(0 To 1, 0 To 1) As Double
+            Dim AtmpResult As Boolean, BtmpResult As Boolean
+            Dim Intersection As Variant
+            Dim ALineMagnitude As Double, BLineMagnitude As Double
+            Dim Delta1 As Double, Delta2 As Double
+            Dim Delta3 As Double, Delta4 As Double
+            
+            VerticesA = Me.OuterBoundary
+            VerticesB = PolyShape.OuterBoundary
+            SidesA() = GetPolygonSides(VerticesA)
+            SidesB() = GetPolygonSides(VerticesB)
+            For zCounter = LBound(SidesA) To UBound(SidesA)
+                TestLineA(0, 0) = SidesA(zCounter, 0)
+                TestLineA(0, 1) = SidesA(zCounter, 1)
+                TestLineA(1, 0) = SidesA(zCounter, 2)
+                TestLineA(1, 1) = SidesA(zCounter, 3)
+                For xCounter = LBound(SidesB) To UBound(SidesB)
+                    TestLineB(0, 0) = SidesB(xCounter, 0)
+                    TestLineB(0, 1) = SidesB(xCounter, 1)
+                    TestLineB(1, 0) = SidesB(xCounter, 2)
+                    TestLineB(1, 1) = SidesB(xCounter, 3)
+                    Debug.Print "Check sides intersection between sides:"; "{(" & TestLineA(0, 0) & ", " & TestLineA(0, 1) & ")" _
+                                                & "|"; "(" & TestLineA(1, 0) & ", " & TestLineA(1, 1) & ")} and " _
+                                                ; "{(" & TestLineB(0, 0) & ", " & TestLineB(0, 1) & ")" _
+                                                & "|"; "(" & TestLineB(1, 0) & ", " & TestLineB(1, 1) & ")}"
+                    Intersection = Me.LinesIntersection(TestLineA, TestLineB) 'Compute intersection
+                    If Not IsNull(Intersection) Then
+                        ALineMagnitude = Sqr((TestLineA(1, 0) - TestLineA(0, 0)) ^ 2 + _
+                                                (TestLineA(1, 1) - TestLineA(0, 1)) ^ 2)
+                        Delta1 = Sqr((TestLineA(0, 0) - Intersection(0, 0)) ^ 2 + _
+                                            (TestLineA(0, 1) - Intersection(0, 1)) ^ 2)
+                        Delta2 = Sqr((TestLineA(1, 0) - Intersection(0, 0)) ^ 2 + _
+                                        (TestLineA(1, 1) - Intersection(0, 1)) ^ 2)
+                        AtmpResult = (Round(Delta1 + Delta2, 2) = Round(ALineMagnitude, 2))
+                        
+                        BLineMagnitude = Sqr((TestLineB(1, 0) - TestLineB(0, 0)) ^ 2 + _
+                                                (TestLineB(1, 1) - TestLineB(0, 1)) ^ 2)
+                        Delta3 = Sqr((TestLineB(0, 0) - Intersection(0, 0)) ^ 2 + _
+                                            (TestLineB(0, 1) - Intersection(0, 1)) ^ 2)
+                        Delta4 = Sqr((TestLineB(1, 0) - Intersection(0, 0)) ^ 2 + _
+                                        (TestLineB(1, 1) - Intersection(0, 1)) ^ 2)
+                        BtmpResult = (Round(Delta3 + Delta4, 2) = Round(BLineMagnitude, 2))
+                        If AtmpResult And BtmpResult Then
+                            Debug.Print "Intersection found between sides:"; "{(" & TestLineA(0, 0) & ", " & TestLineA(0, 1) & ")" _
+                                                & "|"; "(" & TestLineA(1, 0) & ", " & TestLineA(1, 1) & ")} and " _
+                                                ; "{(" & TestLineB(0, 0) & ", " & TestLineB(0, 1) & ")" _
+                                                & "|"; "(" & TestLineB(1, 0) & ", " & TestLineB(1, 1) & ")}"
+                            GoTo EndTask
+                        End If
+                    End If
+                Next xCounter
+            Next zCounter
+EndTask:
+            SidesOverlaps = (AtmpResult And BtmpResult)
+        End If
+    End If
+End Function
 Public Function SingleProperty(PropertyName As String) As Variant
     On Error Resume Next
     SingleProperty = P_PropertiesColl.Item(PropertyName)
