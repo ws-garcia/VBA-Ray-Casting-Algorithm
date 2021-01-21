@@ -1,6 +1,6 @@
 # VBA Ray Casting Algorithm
 
-Implementation of the ray casting algorithm in VBA
+Implementation of the ray casting algorithm in VBA, with some extra features like polygons sides intersection detection. 
  
 ## Description
 
