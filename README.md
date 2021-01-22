@@ -1,5 +1,5 @@
 # VBA Ray Casting Algorithm
-
+# ![Ray Casting](Shapes_Overlaps.gif)
 Implementation of the ray casting algorithm in VBA, with some extra features like polygons sides intersection detection. 
  
 ## Description
